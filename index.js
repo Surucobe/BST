@@ -1,12 +1,12 @@
 //sort and remove duplicates!
-const test = [10, 6, 15, 3, 8, 20]; // Output: 3, 6, 8, 10, 15, 20
+const test = [10, 3, 15, 6, 8, 20]; // Output: 3, 6, 8, 10, 15, 20
 
 class Node {
   constructor(value){
     this.data = value;
+    this.level = 0;
     this.left = null;
     this.rigth = null;
-    this.level = 0;
   }
 }
 
@@ -15,8 +15,15 @@ class Tree {
     this.root = null;
   }
 
-  buildTree(array){
-    array.forEach(element => this.insert(element));
+  buildTree(sortedArray) {
+    if(sortedArray.length === 0) return;
+    sortedArray = [...new Set(sortedArray)]
+
+    const mid = Math.floor(sortedArray.length/2);
+    this.insert(sortedArray[mid]);
+
+    this.buildTree(sortedArray.slice(0, mid));
+    this.buildTree(sortedArray.slice(mid+1));
   }
 
   insert(value){
@@ -52,11 +59,13 @@ class Tree {
       throw new Error('A callback was expected but none was pass');
     }
 
-    if(node !== null){
-      this.inOrder(callback, node.left);
-      callback(node);
-      this.inOrder(callback, node.rigth);
-    }
+    if(node === null) return []
+    debugger
+    const left = this.inOrder(callback, node.left);
+    callback(node);
+    const right = this.inOrder(callback, node.rigth);
+
+    return [node.data].concat(left, right)
   }
 
   preOrder(callback,node = this.root){
@@ -157,24 +166,10 @@ class Tree {
     return Math.max(leftHeight, rightHeight)+1;
   }
 
-  rebalance() {
-    const sortedArray = this.inOrder(); // Step 1: Get sorted array
-    this.root = this.buildBalancedTree(sortedArray); // Step 2: Rebuild the tree from sorted array
+  rebalance(callback) {
+    const sortedArray = this.inOrder(callback); // Step 1: Get sorted array
+    this.root = this.buildTree(sortedArray); // Step 2: Rebuild the tree from sorted array
   }
-
-  // Helper function to build a balanced tree from sorted array
-  buildBalancedTree(sortedArray) {
-    if (sortedArray.length === 0) return null;
-
-    const mid = Math.floor(sortedArray.length / 2);
-    const root = new Node(sortedArray[mid]);
-
-    root.left = this.buildBalancedTree(sortedArray.slice(0, mid)); // Left half
-    root.right = this.buildBalancedTree(sortedArray.slice(mid + 1)); // Right half
-
-    return root;
-  }
-
 }
 
 function printData(node) {
@@ -183,9 +178,6 @@ function printData(node) {
 
 const bst = new Tree();
 bst.buildTree(test);
-// bst.inOrder(printData);
-//console.log(bst.find(150))
-//bst.levelOrder(printData);
-//console.log(bst.height());
-//console.log(bst.depth(3));
-console.log(bst.balancedResult());
+bst.inOrder(printData);
+console.log(bst.find(150))
+bst.levelOrder(printData);
